@@ -11,6 +11,7 @@ namespace Toxic
         public const string TypeName = "TypeName";
         public const string MethodCount = "MethodCount";
         public const string Name = "Name";
+        public const string Namespace = "Namespace";
         public const string Value = "Value";
         public const string ClassCoupling = "ClassCoupling";
         public const string MaintainabilityIndex = "MaintainabilityIndex";
@@ -27,6 +28,7 @@ namespace Toxic
             {ComplexityPerMethod, Is.GreaterThanOrEqualTo(1)},
             {CouplingPerMethod, Is.GreaterThanOrEqualTo(1)},
             {TypeName, value => false},
+            {Namespace, value => false},
             {MethodCount, value => false},
         };
 
@@ -57,6 +59,7 @@ namespace Toxic
                 .SelectMany(node => node.Descendants("Metric"));
 
             var metricsMetaData = new Metrics();
+            metricsMetaData[Namespace] = typeNode.Parent.Parent.Get(Name);
             metricsMetaData[TypeName] = typeNode.Get(Name);
             metricsMetaData[LinesPerMethod] = MemberToxicityFor(LinesOfCode, threasholdLimits[LinesPerMethod], memberMetrics).ToString();
             metricsMetaData[ComplexityPerMethod] = MemberToxicityFor(CyclomaticComplexity, threasholdLimits[CyclomaticComplexity], memberMetrics).ToString();
@@ -68,7 +71,7 @@ namespace Toxic
         public static double MemberToxicityFor(string metricName, double threshold, IEnumerable<XElement> metrics)
         {
             var sum = metrics.Where(metric => metric.Get(Name) == metricName)
-                .Sum(metric => Normalise( metric.Get(Value).ToDouble(), threshold));
+                .Sum(metric => Normalise(metric.Get(Value).ToDouble(), threshold));
 
             return sum;
         }
